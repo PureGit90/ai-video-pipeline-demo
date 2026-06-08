@@ -178,6 +178,30 @@ Respond with valid JSON only, no markdown fences:
 
 
 # ---------------------------------------------------------------------------
+# Mock audio (demo mode — no ElevenLabs key)
+# ---------------------------------------------------------------------------
+
+def generate_mock_audio(duration_secs: int = 8) -> str:
+    """Create a short silent mp3 using FFmpeg for demo mode (no ElevenLabs key needed)."""
+    output_dir = Path(__file__).parent / "output"
+    output_dir.mkdir(exist_ok=True)
+    audio_path = output_dir / "voiceover.mp3"
+    cmd = [
+        "ffmpeg", "-y",
+        "-f", "lavfi",
+        "-i", f"anullsrc=r=44100:cl=stereo",
+        "-t", str(duration_secs),
+        "-q:a", "9",
+        "-acodec", "libmp3lame",
+        str(audio_path),
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+    if result.returncode != 0:
+        raise RuntimeError(f"Mock audio generation failed:\n{result.stderr}")
+    return str(audio_path)
+
+
+# ---------------------------------------------------------------------------
 # FFmpeg assembly
 # ---------------------------------------------------------------------------
 

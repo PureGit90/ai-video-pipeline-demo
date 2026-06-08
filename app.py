@@ -15,6 +15,7 @@ load_dotenv()
 
 from pipeline import (
     generate_voiceover,
+    generate_mock_audio,
     submit_heygen_video,
     poll_heygen_status,
     download_heygen_video,
@@ -118,12 +119,7 @@ st.title("AI Video Pipeline")
 st.caption("Script → ElevenLabs Voiceover → HeyGen Avatar → FFmpeg Assembly → YouTube-ready MP4")
 
 if DEMO_MODE:
-    st.info(
-        "**Demo Mode** — HEYGEN_API_KEY not set. "
-        "The pipeline will run ElevenLabs TTS and generate a still-image video via FFmpeg. "
-        "Set HEYGEN_API_KEY in .env to enable the full avatar pipeline.",
-        icon="🎭",
-    )
+    st.caption("Sample output — pipeline runs end to end with placeholder audio and thumbnail.")
 
 st.divider()
 
@@ -172,20 +168,8 @@ with col_left:
         avatar_id_input = HEYGEN_AVATAR
         st.caption("HeyGen avatar: skipped (Demo Mode)")
 
-    st.markdown("**API Keys**")
     el_ok = bool(ELEVENLABS_KEY)
-    hy_ok = bool(HEYGEN_KEY)
     an_ok = bool(ANTHROPIC_KEY)
-
-    cols_k = st.columns(3)
-    cols_k[0].metric("ElevenLabs", "Set" if el_ok else "Missing", delta_color="off")
-    cols_k[1].metric("HeyGen", "Set" if hy_ok else "Demo", delta_color="off")
-    cols_k[2].metric("Anthropic", "Set" if an_ok else "Missing", delta_color="off")
-
-    if not el_ok:
-        st.warning("ELEVENLABS_API_KEY not set — voiceover step will be skipped.")
-    if not an_ok:
-        st.warning("ANTHROPIC_API_KEY not set — metadata generation will be skipped.")
 
     st.divider()
     generate_btn = st.button(
@@ -234,8 +218,14 @@ with col_right:
                     log(f"Step 1 — FAILED: {e}")
                     st.stop()
             else:
-                st.warning("Step 1 skipped — no ElevenLabs key.")
-                log("Step 1 — Skipped (no API key)")
+                try:
+                    audio_path = generate_mock_audio(duration_secs=8)
+                    st.session_state.audio_path = audio_path
+                    st.success("Voiceover ready (sample audio — add ELEVENLABS_API_KEY for real TTS)")
+                    log("Step 1 — Sample audio generated (demo mode)")
+                except Exception as e:
+                    st.warning(f"Could not generate sample audio: {e}")
+                    log(f"Step 1 — Sample audio failed: {e}")
 
         # ---------------------------------------------------------------
         # Step 2 — HeyGen avatar submit (or demo mode)
@@ -291,6 +281,14 @@ with col_right:
         # ---------------------------------------------------------------
         if DEMO_MODE and st.session_state.audio_path:
             with st.spinner("Step 4/4 — Assembling video with FFmpeg..."):
+                # Auto-generate thumbnail if missing
+                if not THUMBNAIL_PATH.exists():
+                    try:
+                        import subprocess as _sp
+                        _sp.run(["python3", str(BASE_DIR / "make_thumbnail.py")],
+                                capture_output=True, timeout=15)
+                    except Exception:
+                        pass
                 thumb = str(THUMBNAIL_PATH) if THUMBNAIL_PATH.exists() else None
                 final_path = str(OUTPUT_DIR / "demo_video.mp4")
                 if thumb:
@@ -307,12 +305,8 @@ with col_right:
                         st.error(f"FFmpeg error: {e}")
                         log(f"Step 4 — FFmpeg FAILED: {e}")
                 else:
-                    st.warning(
-                        "No thumbnail found at `sample_data/thumbnail.jpg`. "
-                        "Run `python make_thumbnail.py` to generate one, "
-                        "or add any 1920x1080 JPEG as `sample_data/thumbnail.jpg`."
-                    )
-                    log("Step 4 — Skipped (no thumbnail for demo mode)")
+                    st.info("Step 4 — Add `sample_data/thumbnail.jpg` to enable video assembly.")
+                    log("Step 4 — Skipped (no thumbnail)")
         elif not DEMO_MODE:
             log("Step 4 — Waiting for HeyGen (use Check Status button)")
 
