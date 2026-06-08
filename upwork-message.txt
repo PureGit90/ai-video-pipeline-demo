@@ -1,6 +1,6 @@
 Built a working slice of your pipeline. Script in, ElevenLabs voiceover out, HeyGen avatar video submitted, FFmpeg assembles the 1080p cut, and Claude generates the title, description, and tags.
 
-Demo is live here: [STREAMLIT_LINK]
+Demo is live here: https://ai-video-pipeline-demo-crebgx7glbynk9dsxtsdue.streamlit.app
 
 On FFmpeg vs Remotion: FFmpeg wins at your volume. Remotion adds a Node.js layer and per-render overhead you don't need for single-channel output. FFmpeg handles assembly in under 30 seconds and the only recurring cost is API calls. Remotion makes sense if you need multi-template or branded lower-thirds at scale, not for a single-channel pipeline.
 

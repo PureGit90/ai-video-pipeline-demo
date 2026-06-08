@@ -11,7 +11,7 @@
 
 Built a working slice of your pipeline. Script in, ElevenLabs voiceover out, HeyGen avatar video submitted, FFmpeg assembles the 1080p cut, and Claude generates the title, description, and tags.
 
-**Demo:** [STREAMLIT_LINK]
+**Demo:** https://ai-video-pipeline-demo-crebgx7glbynk9dsxtsdue.streamlit.app
 **Screenshots:** [ATTACHED]
 
 ---
