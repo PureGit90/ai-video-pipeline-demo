@@ -1,0 +1,13 @@
+Built a working slice of your pipeline. Script in, ElevenLabs voiceover out, HeyGen avatar video submitted, FFmpeg assembles the 1080p cut, and Claude generates the title, description, and tags.
+
+Demo is live here: [STREAMLIT_LINK]
+
+On FFmpeg vs Remotion: FFmpeg wins at your volume. Remotion adds a Node.js layer and per-render overhead you don't need for single-channel output. FFmpeg handles assembly in under 30 seconds and the only recurring cost is API calls. Remotion makes sense if you need multi-template or branded lower-thirds at scale, not for a single-channel pipeline.
+
+I have the HeyGen API integrated and have used ElevenLabs for voiceover production in past projects. The async nature of HeyGen (2-3 min per video) is already handled in the demo with a polling step so the pipeline doesn't block.
+
+Stack: ElevenLabs, HeyGen API, FFmpeg, Claude Haiku for metadata, n8n for scheduling and retries.
+
+Send me one of your scripts and I'll run it through the full pipeline before we scope the project.
+
+Rate: $750
